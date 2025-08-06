@@ -67,4 +67,165 @@ This example teaches **clean code structure**, **reflection**, and **AOP fundame
 
 ---
 
-Created by: Atharva Kumar
+Created by: Atharva Kumar\
+
+
+
+
+
+
+*************************** Understanding the Flow **************************************
+
+
+
+# 🔍 Java Dynamic Proxy – Execution Flow Explained with Code
+
+This README explains **how the code works step-by-step** with **control flow**, **proxy usage**, and relevant **Java code snippets** from your project.
+
+---
+
+## ✅ Step-by-Step Execution Flow
+
+Let's go through how the program runs, from the `main()` method to dynamic proxy handling.
+
+---
+
+### 🟩 Step 1: Application Starts in `Main.java`
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        Man mohan = new Man("Mohan", 30, "delhi", "india");
+
+        ClassLoader mohanClassLoader = mohan.getClass().getClassLoader();
+        Class[] interfaces = mohan.getClass().getInterfaces();
+
+        Person proxyMohan = (Person) Proxy.newProxyInstance(
+            mohanClassLoader,
+            interfaces,
+            new PersonInvocationHandler(mohan)
+        );
+
+        proxyMohan.introduce(mohan.getName());
+    }
+}
+```
+
+### 🔸 Explanation:
+- A new object `mohan` of class `Man` is created.
+- The **class loader** and list of **interfaces** implemented by `Man` (i.e., `Person`) are retrieved.
+- A **dynamic proxy object** `proxyMohan` is created that wraps `mohan`, using `PersonInvocationHandler`.
+
+---
+
+### 🟩 Step 2: `Man.java` – Our Real Object
+
+```java
+public class Man implements Person {
+    private String name;
+    private int age;
+    private String city;
+    private String country;
+
+    public Man(String name, int age, String city, String country) {
+        this.name = name;
+        this.age = age;
+        this.city = city;
+        this.country = country;
+    }
+
+    @Override
+    public void introduce(String name) {
+        System.out.println("My name is " + this.name);
+    }
+
+    @Override
+    public void sayAge(int age) {
+        System.out.println("I am " + this.age + " years old");
+    }
+
+    @Override
+    public void sayWhereFrom(String city, String country) {
+        System.out.println("I am from " + this.city + ", " + this.country);
+    }
+
+    public String getName() {
+        return this.name;
+    }
+}
+```
+
+---
+
+### 🟩 Step 3: `Person.java` – Interface
+
+```java
+public interface Person {
+    void introduce(String name);
+    void sayAge(int age);
+    void sayWhereFrom(String city, String country);
+}
+```
+
+- Interface that defines methods `Man` must implement.
+- Used in proxy creation to define which methods can be intercepted.
+
+---
+
+### 🟩 Step 4: `PersonInvocationHandler.java` – Proxy Interceptor
+
+```java
+public class PersonInvocationHandler implements InvocationHandler {
+    private Person person;
+
+    public PersonInvocationHandler(Person person) {
+        this.person = person;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("[Proxy Interception] Method called: " + method.getName());
+        return method.invoke(person, args);
+    }
+}
+```
+
+- Implements `InvocationHandler`, a standard interface for handling proxy calls.
+- The `invoke()` method intercepts all method calls to `proxyMohan`.
+- It prints a message and **forwards the method call** to the real object (`mohan`) using reflection.
+
+---
+
+## 🧠 What are Proxies Doing?
+
+- `proxyMohan` is not a real `Man` object, but **looks like a Person**.
+- When you call `proxyMohan.introduce(...)`, it doesn't go directly to `Man.introduce`.
+- Instead, it goes to `invoke()` in `PersonInvocationHandler`.
+- There, the method is intercepted (e.g., for logging, security), then passed on to `mohan`.
+
+---
+
+## 🛠 Real World Analogy
+
+Think of a **Receptionist (Proxy)** who:
+- Accepts requests on behalf of the **Manager (Real Object)**.
+- Logs who's visiting.
+- Then passes the message to the manager.
+
+In the same way:
+- Proxy logs/intercepts method calls.
+- Then delegates to the actual object.
+
+---
+
+## ✅ Summary
+
+| Concept | Role |
+|--------|------|
+| `Man` | Real object |
+| `Person` | Interface |
+| `Proxy.newProxyInstance` | Creates a proxy that wraps `Man` |
+| `InvocationHandler` | Defines how method calls are handled/intercepted |
+
+That's how dynamic proxy and control flow work in your code!
+
